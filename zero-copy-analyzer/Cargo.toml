@@ -1,0 +1,125 @@
+[workspace]
+resolver = "2"
+members = ["."]
+
+[package]
+name = "zero-copy-analyzer"
+version = "0.1.0"
+edition = "2021"
+authors = ["Network Engineering Team"]
+description = "Production-grade zero-copy network packet analyzer"
+license = "MIT OR Apache-2.0"
+keywords = ["networking", "xdp", "zero-copy", "packet-capture", "performance"]
+categories = ["network-programming", "os"]
+
+[features]
+default = ["xdp"]
+xdp = ["aya", "libc"]
+tpacket = ["libc"]
+dpdk = ["dpdk-sys"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full", "rt-multi-thread", "sync", "time", "macros", "net"] }
+
+# CLI parsing
+clap = { version = "4.4", features = ["derive", "env"] }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Hashing
+ahash = "0.8"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+
+# Concurrent data structures
+dashmap = "5.5"
+crossbeam = { version = "0.8", features = ["crossbeam-channel", "crossbeam-queue"] }
+
+# Small vectors
+smallvec = "1.11"
+
+# HTTP server for Prometheus
+axum = "0.7"
+hyper = { version = "1.1", features = ["server"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["trace"] }
+
+# Metrics
+prometheus = "0.13"
+metrics = "0.22"
+metrics-exporter-prometheus = "0.13"
+
+# Time
+instant = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+
+# Signal handling
+ctrlc = { version = "3.4", features = ["termination"] }
+
+# CPU count
+num_cpus = "1.16"
+
+# Async trait
+async-trait = "0.1"
+
+# XDP support (optional)
+aya = { version = "0.12", optional = true }
+
+# Low-level system access
+libc = { version = "0.2", optional = true }
+
+# DPDK support (optional, stretch goal)
+dpdk-sys = { version = "0.2", optional = true, default-features = false }
+
+# Nom parser combinator (optional, we use hand-rolled for performance)
+nom = { version = "7.1", optional = true }
+
+# pcap-ng writer (stretch goal)
+pcapng = { version = "0.4", optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.9"
+hex-literal = "0.4"
+
+[[bench]]
+name = "parser_bench"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.bench]
+opt-level = 3
+lto = "thin"
+debug = true
+
+[lints.rust]
+unsafe_code = "warn"
+
+[lints.clippy]
+pedantic = "deny"
+unwrap_used = "warn"
+expect_used = "warn"
+missing_panics_doc = "allow"
+missing_errors_doc = "allow"
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+cast_lossless = "allow"
+inline_always = "allow"
